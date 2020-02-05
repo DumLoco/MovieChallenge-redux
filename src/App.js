@@ -1,26 +1,54 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import Navbar from "./components/Navbar.js";
+import { BrowserRouter as Router } from "react-router-dom";
+import Footer from "./components/Footer";
+import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { movieList, movieSearch } from "./actions";
+import CreateRoutes from "./routes.js";
 
-function App() {
+const App = () => {
+  const dispatch = useDispatch();
+  const movSearch = useSelector(state => state.movieSearchReducer);
+  const ListaTitulos = useSelector(state => state.movieListReducer);
+
+  const search = event => {
+    event.preventDefault();
+    axios
+      .get(`https://www.omdbapi.com/?apikey=fec0f00e&s=${movSearch}`)
+      .then(res => res.data)
+      .then(res => {
+        if (res.Search === undefined) {
+          dispatch(movieList([]));
+
+          return;
+        }
+
+        const listMovies = res.Search.map(movie => movie);
+        dispatch(movieList(listMovies));
+      });
+  };
+
+  const handleForm = event => {
+    dispatch(movieSearch(event.target.value));
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div className="App">
+        <Navbar />
+        <div className="separador"></div>
+        <CreateRoutes
+          handleForm={handleForm}
+          search={search}
+          ListaTitulos={ListaTitulos}
+        />
+
+        <Footer />
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
